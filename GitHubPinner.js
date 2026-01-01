@@ -84,10 +84,20 @@
   }
 
   function loadCSS() {
+    // Get the base URL from the script's location
+    var scripts = document.getElementsByTagName('script');
+    var scriptPath = '';
+    for (var i = 0; i < scripts.length; i++) {
+      if (scripts[i].src.indexOf('GitHubPinner.js') !== -1) {
+        scriptPath = scripts[i].src.replace('GitHubPinner.js', '');
+        break;
+      }
+    }
+
     var styleref = document.createElement("link")
     styleref.rel = "stylesheet"
     styleref.type = "text/css"
-      styleref.href = "css/gitstyle.css"//"https://alexgama11.github.io/GitGlue/css/gitstyle.css"
+    styleref.href = scriptPath + "css/gitstyle.css"
     document.getElementsByTagName("head")[0].prepend(styleref)
   }
 

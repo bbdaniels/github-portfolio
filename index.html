@@ -1,20 +1,212 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta lang="en" charset="utf-8">
-  <title>GitGlue-Dark Mode Demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GitGlue - Embed GitHub Profiles & Repos</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+      min-height: 100vh;
+      color: #e6edf3;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 700;
+      margin: 0 0 16px 0;
+      background: linear-gradient(90deg, #58a6ff, #79c0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      font-size: 20px;
+      color: #8b949e;
+      margin: 0;
+    }
+
+    .section {
+      margin-bottom: 60px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #e6edf3;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::before {
+      content: "";
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #58a6ff;
+      border-radius: 2px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .demo-item {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .demo-label {
+      font-size: 14px;
+      color: #8b949e;
+      font-weight: 500;
+    }
+
     .github-pinner {
-      display: inline-block;
-      vertical-align: top;
-      margin-right: 10px;
+      display: block;
+    }
+
+    .code-block {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-top: 40px;
+    }
+
+    .code-block code {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 14px;
+      color: #e6edf3;
+      line-height: 1.6;
+    }
+
+    .code-comment {
+      color: #8b949e;
+    }
+
+    .code-tag {
+      color: #7ee787;
+    }
+
+    .code-attr {
+      color: #79c0ff;
+    }
+
+    .code-string {
+      color: #a5d6ff;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      border-top: 1px solid #30363d;
+      color: #8b949e;
+      font-size: 14px;
+    }
+
+    footer a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-    <script src="GitHubPinner.js"></script>
-    <div data="https://github.com/AlexGama11?tab=repositories" class="github-pinner" style="visibility: hidden;"></div>
-    <div data="https://github.com/AlexGama11" class="github-pinner flat" style="visibility: hidden;"></div>
-    <div data="https://github.com/AlexGama11/OpenGl-Project" class="github-pinner flat" style="visibility: hidden;"></div>
-    <div data="https://github.com/AlexGama11/Secret-Santa-Sorter" class="github-pinner flat" style="visibility: hidden;"></div>
+  <div class="container">
+    <header>
+      <h1>GitGlue</h1>
+      <p class="tagline">Beautiful GitHub profile and repository embeds for your website</p>
+    </header>
+
+    <section class="section">
+      <h2 class="section-title">Profile Cards</h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <span class="demo-label">Standard Style</span>
+          <div data="https://github.com/octocat" class="github-pinner" style="visibility: hidden;"></div>
+        </div>
+        <div class="demo-item">
+          <span class="demo-label">Flat Style (Green Button)</span>
+          <div data="https://github.com/octocat" class="github-pinner flat" style="visibility: hidden;"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Repository Cards</h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <span class="demo-label">Standard Style</span>
+          <div data="https://github.com/facebook/react" class="github-pinner" style="visibility: hidden;"></div>
+        </div>
+        <div class="demo-item">
+          <span class="demo-label">Flat Style</span>
+          <div data="https://github.com/microsoft/vscode" class="github-pinner flat" style="visibility: hidden;"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">All Repositories</h2>
+      <div data="https://github.com/octocat?tab=repositories" class="github-pinner" style="visibility: hidden;"></div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Usage</h2>
+      <div class="code-block">
+        <code>
+<span class="code-comment">&lt;!-- 1. Include the script --&gt;</span>
+<span class="code-tag">&lt;script</span> <span class="code-attr">src</span>=<span class="code-string">"https://yourusername.github.io/GitGlue/GitHubPinner.js"</span><span class="code-tag">&gt;&lt;/script&gt;</span>
+
+<span class="code-comment">&lt;!-- 2. Add a profile card --&gt;</span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">data</span>=<span class="code-string">"https://github.com/username"</span> <span class="code-attr">class</span>=<span class="code-string">"github-pinner"</span> <span class="code-attr">style</span>=<span class="code-string">"visibility: hidden;"</span><span class="code-tag">&gt;&lt;/div&gt;</span>
+
+<span class="code-comment">&lt;!-- 3. Add a repository card --&gt;</span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">data</span>=<span class="code-string">"https://github.com/username/repo"</span> <span class="code-attr">class</span>=<span class="code-string">"github-pinner"</span> <span class="code-attr">style</span>=<span class="code-string">"visibility: hidden;"</span><span class="code-tag">&gt;&lt;/div&gt;</span>
+
+<span class="code-comment">&lt;!-- 4. Show all repositories with search --&gt;</span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">data</span>=<span class="code-string">"https://github.com/username?tab=repositories"</span> <span class="code-attr">class</span>=<span class="code-string">"github-pinner"</span> <span class="code-attr">style</span>=<span class="code-string">"visibility: hidden;"</span><span class="code-tag">&gt;&lt;/div&gt;</span>
+
+<span class="code-comment">&lt;!-- Add "flat" class for alternative style --&gt;</span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">data</span>=<span class="code-string">"https://github.com/username"</span> <span class="code-attr">class</span>=<span class="code-string">"github-pinner flat"</span> <span class="code-attr">style</span>=<span class="code-string">"visibility: hidden;"</span><span class="code-tag">&gt;&lt;/div&gt;</span>
+        </code>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>GitGlue is open source. <a href="https://github.com/bbdaniels/GitGlue">View on GitHub</a></p>
+  </footer>
+
+  <script src="GitHubPinner.js"></script>
 </body>
 </html>

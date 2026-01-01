@@ -1,166 +1,214 @@
-body {
-    padding: 0;
-    margin: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    background-color: #0d1117;
+/* GitGlue - Modern GitHub Embed Styling */
+
+/* Base Reset for Embeds */
+.github-pinner {
+  --gp-bg: #0d1117;
+  --gp-bg-secondary: #161b22;
+  --gp-border: #30363d;
+  --gp-text: #e6edf3;
+  --gp-text-muted: #8b949e;
+  --gp-text-subtle: #6e7681;
+  --gp-link: #58a6ff;
+  --gp-link-hover: #79c0ff;
+  --gp-accent: #238636;
+  --gp-accent-hover: #2ea043;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--gp-text);
+  background-color: var(--gp-bg);
+  border: 1px solid var(--gp-border);
+  border-radius: 6px;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
-.github-pinner {
-    background-color: #0d1117;
-    border: 1px solid #e1e4e8;
-    padding: 15px;
-    border-radius: 5px;
+.github-pinner * {
+  box-sizing: border-box;
 }
+
+.github-pinner a {
+  color: var(--gp-link);
+  text-decoration: none;
+}
+
+.github-pinner a:hover {
+  color: var(--gp-link-hover);
+  text-decoration: underline;
+}
+
+/* ============================================
+   PROFILE CARD STYLING
+   ============================================ */
 
 .github-pinner.gp-profile {
-  width: auto;
-  height: auto;
+  width: 100%;
+  max-width: 360px;
 }
 
-.github-pinner.gp-repo {
-  width: auto;
-}
-
-.github-pinner.gp-all {
-    background-color: #0d1117;
-    border-radius: 3px;
-    width: auto;
-}
-
-/* MARK: - Profile Styling */
 .github-pinner #gp-container-profile {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.github-pinner #gp-container-profile a > #gp-avatar {
-  user-select: none;
-  display: inline-block;
-  vertical-align: top;
-  width: 80px; /* 80px if bio exists */
-  /* 60px else */
-  border-radius: 5px;
+/* Avatar and Info Row */
+.github-pinner #gp-container-profile > a {
+  display: block;
+  flex-shrink: 0;
 }
 
-.github-pinner #gp-container-profile > #gp-information {
-  width: calc(100% - 80px - 15px);
-  display: inline-block;
-  overflow: auto;
-  margin-left: 10px;
+.github-pinner #gp-container-profile #gp-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--gp-border);
+  display: block;
+  float: left;
+  margin-right: 16px;
 }
 
-.github-pinner #gp-container-profile > #gp-information > .gp-element {
+.github-pinner #gp-container-profile #gp-information {
+  overflow: hidden;
+}
+
+.github-pinner #gp-container-profile #gp-information .gp-element {
   display: block;
 }
 
-.github-pinner #gp-container-profile > #gp-information .gp-link {
-  text-decoration: inherit;
+.github-pinner #gp-container-profile #gp-information .gp-link {
+  text-decoration: none;
   color: inherit;
-}
-
-.github-pinner #gp-container-profile > #gp-information .gp-link > .gp-name:hover, .github-pinner #gp-container-profile > #gp-information .gp-link > .gp-user:hover {
-  cursor: pointer;
-  color: #0366d6;
-}
-
-.github-pinner #gp-container-profile > #gp-information .gp-link > .gp-name {
-  font-weight: 600;
-  font-size: 20px;
-}
-
-.github-pinner #gp-container-profile > #gp-information .gp-link > .gp-user {
   display: block;
-  font-size: 16px;
-  color: #666;
-  font-style: normal;
-  font-weight: 300;
 }
 
-.github-pinner #gp-container-profile > #gp-information > .gp-bio {
-    margin-top: 5px;
-    font-size: 13px;
-    color: #0366d6;
+.github-pinner #gp-container-profile #gp-information .gp-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gp-text);
+  line-height: 1.25;
+}
+
+.github-pinner #gp-container-profile #gp-information .gp-link:hover .gp-name {
+  color: var(--gp-link);
+  text-decoration: underline;
+}
+
+.github-pinner #gp-container-profile #gp-information .gp-user {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--gp-text-muted);
+  font-style: normal;
+}
+
+.github-pinner #gp-container-profile #gp-information .gp-bio {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--gp-text);
+  clear: both;
+}
+
+/* Follow Button */
+.github-pinner #gp-container-profile .gp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 5px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--gp-text);
+  background-color: var(--gp-bg-secondary);
+  border: 1px solid var(--gp-border);
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.1s ease, border-color 0.1s ease;
+  float: right;
+  margin-top: -40px;
 }
 
 .github-pinner #gp-container-profile .gp-btn:hover {
-    background-color: #e6ebf1;
-    background-image: linear-gradient(-180deg, #f0f3f6 0%, #e6ebf1 90%);
-    background-position: 0 -0.5em;
-    border-color: rgba(27,31,35,0.35);
+  background-color: #30363d;
+  border-color: #8b949e;
+  text-decoration: none;
 }
 
-.github-pinner #gp-container-profile .gp-btn {
-    margin-top: 6px;
-    width: 100px;
-    float: right;
-    text-decoration: none;
-    text-align: center;
-    background-repeat: repeat-x;
-    background-position: -1px -1px;
-    background-size: 110% 110%;
-    border: 1px solid rgba(27,31,35,0.2);
-    border-radius: 0.25em;
-    -webkit-appearance: none;
-    user-select: none;
-    padding: 6px 12px;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 20px;
-    white-space: nowrap;
-    vertical-align: middle;
-    cursor: pointer;
-    color: #eff3f6;
-    background-color: #24292e;
-    //background-image: linear-gradient(-180deg, #eff3f6 0%, #24292e 90%);
+/* Stats Row */
+.github-pinner #gp-container-profile .gp-stats {
+  display: flex;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gp-border);
+  clear: both;
 }
 
-.github-pinner #gp-container-profile > .gp-stats {
-  display: block;
-  margin-top: 8px;
+.github-pinner #gp-container-profile .gp-stats .gp-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--gp-text-muted);
+  padding: 0;
+  border: none;
 }
 
-.github-pinner #gp-container-profile > .gp-stats .gp-stat {
-    text-decoration: none;
-    width: 70px;
-    border-right: 1px solid #eaecef;
-    color: #0366d6;
-    cursor: pointer;
-    display: inline-block;
-    padding: 0 6px;
-    margin-top: 5px;
+.github-pinner #gp-container-profile .gp-stats .gp-stat:hover {
+  color: var(--gp-link);
 }
 
-.github-pinner #gp-container-profile > .gp-stats .gp-stat:last-of-type {
-  border-right: none;
-}
-
-.github-pinner #gp-container-profile > .gp-stats .gp-stat:hover .gp-stat-desc, .github-pinner #gp-container-profile > .gp-stats .gp-stat:hover .gp-stat-val {
-  color: #0366d6;
-}
-
-.github-pinner #gp-container-profile > .gp-stats .gp-stat-val {
-  color: #586069;
-  font-size: 19px;
-  text-align: center;
-  display: block;
-}
-.github-pinner #gp-container-profile > .gp-stats .gp-stat-desc {
-  color: #7b828a;
-  font-size: 11px;
-  text-align: center;
+.github-pinner #gp-container-profile .gp-stats .gp-stat-val {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gp-text);
   display: block;
 }
 
-/* MARK: - Repo Styling */
+.github-pinner #gp-container-profile .gp-stats .gp-stat:hover .gp-stat-val {
+  color: var(--gp-link);
+}
+
+.github-pinner #gp-container-profile .gp-stats .gp-stat-desc {
+  font-size: 12px;
+  color: var(--gp-text-muted);
+  display: block;
+}
+
+/* ============================================
+   REPOSITORY CARD STYLING
+   ============================================ */
+
+.github-pinner.gp-repo {
+  width: 100%;
+  max-width: 400px;
+}
+
 .github-pinner #gp-container-repo {
-  position: relative;
-  height: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .github-pinner #gp-container-repo .gp-title {
-  text-decoration: none;
-  color: #0366d6;
-  font-size: 14px;
-  font-weight: 600 !important;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gp-link);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.github-pinner #gp-container-repo .gp-title::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%238b949e'%3E%3Cpath d='M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
 }
 
 .github-pinner #gp-container-repo .gp-title:hover {
@@ -168,107 +216,184 @@ body {
 }
 
 .github-pinner #gp-container-repo .gp-desc {
-    margin-top: 5px;
-    color: #6a737d !important;
-    font-size: 12px !important;
+  font-size: 14px;
+  color: var(--gp-text-muted);
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .github-pinner #gp-container-repo #gp-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
 }
 
 .github-pinner #gp-container-repo #gp-stats .gp-stat {
-    text-decoration: none;
-    color: #0366d6 !important;
-    font-size: 12px !important;
-    display: inline-block;
-    margin: 0 0;
-    margin-left: 15px;
-}
-
-.github-pinner #gp-container-repo #gp-stats .gp-stat:first-child {
-  margin-left: 0px;
-}
-
-.github-pinner #gp-container-repo #gp-stats .gp-stat .gp-octicon {
-  vertical-align: text-bottom;
-  display: inline-block;
-  fill: currentColor;
-  margin-right: 3px;
-}
-
-.github-pinner #gp-container-repo #gp-stats .gp-stat .gp-lang {
-  background-color: #f1e05a;
-  position: relative;
-  top: 2px;
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 5px;
-}
-
-.github-pinner #gp-container-repo #gp-stats .gp-stat.gp-link {
-  cursor: pointer;
-
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--gp-text-muted);
+  text-decoration: none;
+  margin: 0;
 }
 
 .github-pinner #gp-container-repo #gp-stats .gp-stat.gp-link:hover {
-  color: #0366d6 !important;
+  color: var(--gp-link);
   text-decoration: none;
 }
 
-.github-pinner #gp-container-all-repos  {
-    position: relative;
-    max-height: calc(100% - 80px);
-    overflow: scroll;
+.github-pinner #gp-container-repo #gp-stats .gp-lang {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.github-pinner #gp-container-repo #gp-stats .gp-octicon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   ALL REPOSITORIES STYLING
+   ============================================ */
+
+.github-pinner.gp-all {
+  width: 100%;
+  max-width: 600px;
 }
 
 .github-pinner .gp-search {
-    /* reset */
-    border: none;
-    outline: none;
-    background-image: none;
-    background-color: #24292e;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-    border: 1px solid #e1e4e8;
-    padding: 10px 12px;
-    padding-left: 35px;
-    font-size: 14px;
-    width: 100%;
-    margin-bottom: 8px;
-    background-image: url("https://d29mk5socxaj4o.cloudfront.net/imgs/search.svg");
-    background-size: 16px 16px;
-    background-repeat: no-repeat;
-    background-position: 12px center;
-    background-blend-mode: red;
-    color: #0366d6;
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  font-size: 14px;
+  color: var(--gp-text);
+  background-color: var(--gp-bg);
+  border: 1px solid var(--gp-border);
+  border-radius: 6px;
+  outline: none;
+  margin-bottom: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%238b949e'%3E%3Cpath d='M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 12px center;
+  background-size: 16px;
+  transition: border-color 0.1s ease, box-shadow 0.1s ease;
+}
+
+.github-pinner .gp-search::placeholder {
+  color: var(--gp-text-subtle);
 }
 
 .github-pinner .gp-search:focus {
-    background-image: url("https://d29mk5socxaj4o.cloudfront.net/imgs/search-highlight.svg");
-    border-color: #0366d6;
+  border-color: var(--gp-link);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+.github-pinner #gp-container-all-repos {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.github-pinner #gp-container-all-repos::-webkit-scrollbar {
+  width: 8px;
+}
+
+.github-pinner #gp-container-all-repos::-webkit-scrollbar-track {
+  background: var(--gp-bg);
+}
+
+.github-pinner #gp-container-all-repos::-webkit-scrollbar-thumb {
+  background: var(--gp-border);
+  border-radius: 4px;
+}
+
+.github-pinner #gp-container-all-repos::-webkit-scrollbar-thumb:hover {
+  background: var(--gp-text-muted);
 }
 
 .github-pinner #gp-container-all-repos > #gp-container-repo {
-  margin: 12px 0;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e1e4e8;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--gp-border);
+}
+
+.github-pinner #gp-container-all-repos > #gp-container-repo:first-child {
+  padding-top: 0;
 }
 
 .github-pinner #gp-container-all-repos > #gp-container-repo:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
+
+/* ============================================
+   FLAT VARIANT (Alternative Style)
+   ============================================ */
+
+.github-pinner.flat {
+  --gp-bg: #161b22;
+  --gp-border: #30363d;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.github-pinner.flat .gp-btn {
+  background-color: var(--gp-accent);
+  border-color: var(--gp-accent);
+  color: #ffffff;
+}
+
+.github-pinner.flat .gp-btn:hover {
+  background-color: var(--gp-accent-hover);
+  border-color: var(--gp-accent-hover);
+}
+
+/* ============================================
+   USER LINK (View on GitHub)
+   ============================================ */
 
 .github-pinner .gp-user-link {
   position: absolute;
   z-index: 1;
   bottom: 10px;
   right: 10px;
+  font-size: 12px;
+  color: var(--gp-text-muted);
 }
 
-/* Additional Styles */
-.github-pinner.flat .gp-btn {
-  background-color: blue;
+.github-pinner .gp-user-link:hover {
+  color: var(--gp-link);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 480px) {
+  .github-pinner {
+    padding: 12px;
+  }
+
+  .github-pinner #gp-container-profile #gp-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .github-pinner #gp-container-profile .gp-btn {
+    float: none;
+    margin-top: 12px;
+    width: 100%;
+  }
+
+  .github-pinner #gp-container-profile .gp-stats {
+    justify-content: space-around;
+  }
 }

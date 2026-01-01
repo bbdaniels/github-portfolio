@@ -156,14 +156,14 @@ class GitHubRepos extends HTMLElement {
         :host {
           display: block;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-          color: #e6edf3;
+          color: #24292f;
           line-height: 1.5;
         }
 
         * { box-sizing: border-box; }
 
         a {
-          color: #58a6ff;
+          color: #0969da;
           text-decoration: none;
         }
         a:hover { text-decoration: underline; }
@@ -177,16 +177,16 @@ class GitHubRepos extends HTMLElement {
         .loading, .error {
           text-align: center;
           padding: 48px;
-          color: #8b949e;
+          color: #57606a;
         }
-        .error { color: #f85149; }
+        .error { color: #cf222e; }
 
         /* Profile Header */
         .profile {
           display: flex;
           gap: 24px;
           padding-bottom: 24px;
-          border-bottom: 1px solid #30363d;
+          border-bottom: 1px solid #d0d7de;
           margin-bottom: 24px;
         }
 
@@ -194,7 +194,7 @@ class GitHubRepos extends HTMLElement {
           width: 100px;
           height: 100px;
           border-radius: 50%;
-          border: 2px solid #30363d;
+          border: 2px solid #d0d7de;
         }
 
         .profile-info {
@@ -204,31 +204,31 @@ class GitHubRepos extends HTMLElement {
         .name {
           font-size: 24px;
           font-weight: 600;
-          color: #e6edf3;
+          color: #24292f;
         }
-        .name:hover { color: #58a6ff; }
+        .name:hover { color: #0969da; }
 
         .username {
           display: block;
-          color: #8b949e;
+          color: #57606a;
           font-size: 16px;
           margin-top: 2px;
         }
 
         .bio {
           margin: 12px 0;
-          color: #e6edf3;
+          color: #24292f;
         }
 
         .stats {
           display: flex;
           gap: 16px;
           font-size: 14px;
-          color: #8b949e;
+          color: #57606a;
         }
-        .stats a { color: #8b949e; }
-        .stats a:hover { color: #58a6ff; }
-        .stats strong { color: #e6edf3; }
+        .stats a { color: #57606a; }
+        .stats a:hover { color: #0969da; }
+        .stats strong { color: #24292f; }
 
         /* Search */
         .search-container {
@@ -239,14 +239,14 @@ class GitHubRepos extends HTMLElement {
           width: 100%;
           padding: 10px 12px;
           font-size: 14px;
-          color: #e6edf3;
-          background: #0d1117;
-          border: 1px solid #30363d;
+          color: #24292f;
+          background: #f6f8fa;
+          border: 1px solid #d0d7de;
           border-radius: 6px;
           outline: none;
         }
         .search:focus {
-          border-color: #58a6ff;
+          border-color: #0969da;
           box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
         }
         .search::placeholder { color: #6e7681; }
@@ -259,13 +259,16 @@ class GitHubRepos extends HTMLElement {
         }
 
         .repo {
-          background: #0d1117;
-          border: 1px solid #30363d;
+          background: #ffffff;
+          border: 1px solid #d0d7de;
           border-radius: 6px;
           padding: 16px;
-          transition: border-color 0.15s;
+          transition: border-color 0.15s, box-shadow 0.15s;
         }
-        .repo:hover { border-color: #8b949e; }
+        .repo:hover {
+          border-color: #0969da;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
 
         .repo-header {
           display: flex;
@@ -274,12 +277,12 @@ class GitHubRepos extends HTMLElement {
           margin-bottom: 8px;
         }
 
-        .repo-icon { color: #8b949e; flex-shrink: 0; }
+        .repo-icon { color: #57606a; flex-shrink: 0; }
 
         .repo-name {
           font-size: 16px;
           font-weight: 600;
-          color: #58a6ff;
+          color: #0969da;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -288,15 +291,15 @@ class GitHubRepos extends HTMLElement {
         .fork-badge {
           font-size: 11px;
           padding: 2px 6px;
-          background: #30363d;
+          background: #ddf4ff;
           border-radius: 12px;
-          color: #8b949e;
+          color: #0969da;
         }
 
         .repo-desc {
           margin: 0 0 12px 0;
           font-size: 14px;
-          color: #8b949e;
+          color: #57606a;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
@@ -309,7 +312,7 @@ class GitHubRepos extends HTMLElement {
           align-items: center;
           gap: 12px;
           font-size: 12px;
-          color: #8b949e;
+          color: #57606a;
         }
 
         .lang {
@@ -328,14 +331,14 @@ class GitHubRepos extends HTMLElement {
           display: flex;
           align-items: center;
           gap: 4px;
-          color: #8b949e;
+          color: #57606a;
         }
-        .stat:hover { color: #58a6ff; text-decoration: none; }
+        .stat:hover { color: #0969da; text-decoration: none; }
         .stat svg { fill: currentColor; }
 
         .updated {
           margin-left: auto;
-          color: #6e7681;
+          color: #8b949e;
         }
 
         /* Responsive */

@@ -23,25 +23,54 @@ class GitHubRepos extends HTMLElement {
     this.shadowRoot.innerHTML = this.getStyles() + '<div class="loading">Loading repositories...</div>';
 
     try {
-      // Fetch user profile and repos in parallel
-      const [profileRes, reposRes] = await Promise.all([
+      // Fetch user profile, repos, and contribution data in parallel
+      const [profileRes, reposRes, eventsRes] = await Promise.all([
         fetch(`https://api.github.com/users/${user}`),
-        fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=100`)
+        fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=100`),
+        fetch(`https://api.github.com/users/${user}/events?per_page=100`)
       ]);
 
       if (!profileRes.ok || !reposRes.ok) throw new Error('Failed to fetch');
 
       const profile = await profileRes.json();
       const repos = await reposRes.json();
+      const events = eventsRes.ok ? await eventsRes.json() : [];
 
-      this.shadowRoot.innerHTML = this.getStyles() + this.buildHTML(profile, repos);
+      // Build contribution data from events
+      const contributions = this.buildContributionData(events);
+
+      this.shadowRoot.innerHTML = this.getStyles() + this.buildHTML(profile, repos, contributions);
       this.setupSearch();
     } catch (err) {
       this.shadowRoot.innerHTML = this.getStyles() + `<p class="error">Failed to load GitHub data</p>`;
     }
   }
 
-  buildHTML(profile, repos) {
+  buildContributionData(events) {
+    // Create a map of dates to contribution counts (last 52 weeks)
+    const today = new Date();
+    const contributions = {};
+
+    // Initialize last 365 days
+    for (let i = 0; i < 365; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const key = date.toISOString().split('T')[0];
+      contributions[key] = 0;
+    }
+
+    // Count events by date
+    events.forEach(event => {
+      const date = event.created_at.split('T')[0];
+      if (contributions[date] !== undefined) {
+        contributions[date]++;
+      }
+    });
+
+    return contributions;
+  }
+
+  buildHTML(profile, repos, contributions) {
     return `
       <div class="container">
         <header class="profile">
@@ -66,6 +95,10 @@ class GitHubRepos extends HTMLElement {
           </div>
         </header>
 
+        <div class="contrib-graph">
+          ${this.buildContributionGraph(contributions)}
+        </div>
+
         <div class="search-container">
           <input type="text" class="search" placeholder="Search repositories...">
         </div>
@@ -74,6 +107,50 @@ class GitHubRepos extends HTMLElement {
           ${repos.map(repo => this.buildRepoCard(repo)).join('')}
         </div>
       </div>
+    `;
+  }
+
+  buildContributionGraph(contributions) {
+    const weeks = 52;
+    const cellSize = 11;
+    const cellGap = 3;
+    const width = weeks * (cellSize + cellGap);
+    const height = 7 * (cellSize + cellGap);
+
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+
+    // Build cells starting from 52 weeks ago
+    let cells = '';
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - (weeks * 7) - dayOfWeek);
+
+    for (let week = 0; week < weeks; week++) {
+      for (let day = 0; day < 7; day++) {
+        const cellDate = new Date(startDate);
+        cellDate.setDate(cellDate.getDate() + (week * 7) + day);
+        const dateKey = cellDate.toISOString().split('T')[0];
+        const count = contributions[dateKey] || 0;
+
+        // Color based on count
+        let color;
+        if (count === 0) color = '#ebedf0';
+        else if (count <= 2) color = '#9be9a8';
+        else if (count <= 4) color = '#40c463';
+        else if (count <= 6) color = '#30a14e';
+        else color = '#216e39';
+
+        const x = week * (cellSize + cellGap);
+        const y = day * (cellSize + cellGap);
+
+        cells += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" fill="${color}"><title>${dateKey}: ${count} contributions</title></rect>`;
+      }
+    }
+
+    return `
+      <svg width="${width}" height="${height}" class="contrib-svg">
+        ${cells}
+      </svg>
     `;
   }
 
@@ -229,6 +306,21 @@ class GitHubRepos extends HTMLElement {
         .stats a { color: #57606a; }
         .stats a:hover { color: #0969da; }
         .stats strong { color: #24292f; }
+
+        /* Contribution Graph */
+        .contrib-graph {
+          margin-bottom: 24px;
+          padding: 16px;
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          overflow-x: auto;
+        }
+
+        .contrib-svg {
+          display: block;
+          margin: 0 auto;
+        }
 
         /* Search */
         .search-container {

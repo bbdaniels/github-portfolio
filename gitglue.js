@@ -47,27 +47,35 @@ class GitHubRepos extends HTMLElement {
   }
 
   buildContributionData(events) {
-    // Create a map of dates to contribution counts (last 52 weeks)
+    // Group events by week for last 12 weeks
+    const weeks = [];
     const today = new Date();
-    const contributions = {};
 
-    // Initialize last 365 days
-    for (let i = 0; i < 365; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const key = date.toISOString().split('T')[0];
-      contributions[key] = 0;
+    // Initialize 12 weeks
+    for (let i = 11; i >= 0; i--) {
+      const weekStart = new Date(today);
+      weekStart.setDate(weekStart.getDate() - (i * 7) - today.getDay());
+      weeks.push({
+        start: weekStart,
+        count: 0,
+        label: weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      });
     }
 
-    // Count events by date
+    // Count events per week
     events.forEach(event => {
-      const date = event.created_at.split('T')[0];
-      if (contributions[date] !== undefined) {
-        contributions[date]++;
+      const eventDate = new Date(event.created_at);
+      for (let i = 0; i < weeks.length; i++) {
+        const weekEnd = new Date(weeks[i].start);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+        if (eventDate >= weeks[i].start && eventDate < weekEnd) {
+          weeks[i].count++;
+          break;
+        }
       }
     });
 
-    return contributions;
+    return weeks;
   }
 
   buildHTML(profile, repos, contributions) {
@@ -104,52 +112,50 @@ class GitHubRepos extends HTMLElement {
         </div>
 
         <div class="repos">
-          ${repos.map(repo => this.buildRepoCard(repo)).join('')}
+          ${repos
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+            .map(repo => this.buildRepoCard(repo)).join('')}
         </div>
       </div>
     `;
   }
 
-  buildContributionGraph(contributions) {
-    const weeks = 52;
-    const cellSize = 11;
-    const cellGap = 3;
-    const width = weeks * (cellSize + cellGap);
-    const height = 7 * (cellSize + cellGap);
+  buildContributionGraph(weeks) {
+    const barWidth = 50;
+    const barGap = 8;
+    const maxHeight = 60;
+    const width = weeks.length * (barWidth + barGap);
+    const height = maxHeight + 30; // Extra space for labels
 
-    const today = new Date();
-    const dayOfWeek = today.getDay();
+    const maxCount = Math.max(...weeks.map(w => w.count), 1);
 
-    // Build cells starting from 52 weeks ago
-    let cells = '';
-    const startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - (weeks * 7) - dayOfWeek);
+    let bars = '';
+    weeks.forEach((week, i) => {
+      const barHeight = (week.count / maxCount) * maxHeight || 2; // Min height of 2
+      const x = i * (barWidth + barGap);
+      const y = maxHeight - barHeight;
 
-    for (let week = 0; week < weeks; week++) {
-      for (let day = 0; day < 7; day++) {
-        const cellDate = new Date(startDate);
-        cellDate.setDate(cellDate.getDate() + (week * 7) + day);
-        const dateKey = cellDate.toISOString().split('T')[0];
-        const count = contributions[dateKey] || 0;
+      // Bar
+      bars += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="3" fill="#40c463" class="activity-bar"><title>${week.label}: ${week.count} events</title></rect>`;
 
-        // Color based on count
-        let color;
-        if (count === 0) color = '#ebedf0';
-        else if (count <= 2) color = '#9be9a8';
-        else if (count <= 4) color = '#40c463';
-        else if (count <= 6) color = '#30a14e';
-        else color = '#216e39';
+      // Label
+      bars += `<text x="${x + barWidth / 2}" y="${maxHeight + 16}" text-anchor="middle" class="bar-label">${week.label}</text>`;
 
-        const x = week * (cellSize + cellGap);
-        const y = day * (cellSize + cellGap);
-
-        cells += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" fill="${color}"><title>${dateKey}: ${count} contributions</title></rect>`;
+      // Count on top of bar
+      if (week.count > 0) {
+        bars += `<text x="${x + barWidth / 2}" y="${y - 4}" text-anchor="middle" class="bar-count">${week.count}</text>`;
       }
-    }
+    });
+
+    const totalEvents = weeks.reduce((sum, w) => sum + w.count, 0);
 
     return `
-      <svg width="${width}" height="${height}" class="contrib-svg">
-        ${cells}
+      <div class="activity-header">
+        <span class="activity-title">Activity (last 12 weeks)</span>
+        <span class="activity-total">${totalEvents} events</span>
+      </div>
+      <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" class="contrib-svg">
+        ${bars}
       </svg>
     `;
   }
@@ -307,7 +313,7 @@ class GitHubRepos extends HTMLElement {
         .stats a:hover { color: #0969da; }
         .stats strong { color: #24292f; }
 
-        /* Contribution Graph */
+        /* Activity Chart */
         .contrib-graph {
           margin-bottom: 24px;
           padding: 16px;
@@ -317,9 +323,45 @@ class GitHubRepos extends HTMLElement {
           overflow-x: auto;
         }
 
+        .activity-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+        }
+
+        .activity-title {
+          font-weight: 600;
+          color: #24292f;
+        }
+
+        .activity-total {
+          font-size: 14px;
+          color: #57606a;
+        }
+
         .contrib-svg {
           display: block;
-          margin: 0 auto;
+          max-width: 100%;
+        }
+
+        .bar-label {
+          font-size: 10px;
+          fill: #57606a;
+        }
+
+        .bar-count {
+          font-size: 11px;
+          font-weight: 600;
+          fill: #24292f;
+        }
+
+        .activity-bar {
+          transition: fill 0.15s;
+        }
+
+        .activity-bar:hover {
+          fill: #2ea043;
         }
 
         /* Search */

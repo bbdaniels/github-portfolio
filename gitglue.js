@@ -43,12 +43,15 @@ class GitHubRepos extends HTMLElement {
     }
   }
 
+  capitalize(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+  }
+
   formatEventDescription(event) {
     const repo = event.repo?.name?.split('/')[1] || event.repo?.name || 'unknown';
     switch (event.type) {
       case 'PushEvent':
-        const commits = event.payload?.commits?.length || 0;
-        return `Pushed ${commits} commit${commits !== 1 ? 's' : ''} to <strong>${repo}</strong>`;
+        return `Pushed to <strong>${repo}</strong>`;
       case 'CreateEvent':
         const refType = event.payload?.ref_type || 'repository';
         const ref = event.payload?.ref;
@@ -60,17 +63,17 @@ class GitHubRepos extends HTMLElement {
       case 'ForkEvent':
         return `Forked <strong>${repo}</strong>`;
       case 'IssuesEvent':
-        return `${event.payload?.action} issue in <strong>${repo}</strong>`;
+        return `${this.capitalize(event.payload?.action)} issue in <strong>${repo}</strong>`;
       case 'IssueCommentEvent':
         return `Commented on issue in <strong>${repo}</strong>`;
       case 'PullRequestEvent':
-        return `${event.payload?.action} PR in <strong>${repo}</strong>`;
+        return `${this.capitalize(event.payload?.action)} PR in <strong>${repo}</strong>`;
       case 'PullRequestReviewEvent':
         return `Reviewed PR in <strong>${repo}</strong>`;
       case 'PullRequestReviewCommentEvent':
         return `Commented on PR in <strong>${repo}</strong>`;
       case 'ReleaseEvent':
-        return `${event.payload?.action} release in <strong>${repo}</strong>`;
+        return `${this.capitalize(event.payload?.action)} release in <strong>${repo}</strong>`;
       case 'PublicEvent':
         return `Made <strong>${repo}</strong> public`;
       default:

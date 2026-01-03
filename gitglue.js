@@ -86,8 +86,10 @@ class GitHubRepos extends HTMLElement {
         return `Commented on PR in ${repoLink}${commentPrLink}`;
       case 'ReleaseEvent':
         const tag = event.payload?.release?.tag_name;
+        const releaseName = event.payload?.release?.name;
         const tagLink = tag ? ` <a href="${repoUrl}/releases/tag/${tag}" target="_blank" rel="noopener" class="commit-hash">${tag}</a>` : '';
-        return `${this.capitalize(event.payload?.action)} release in ${repoLink}${tagLink}`;
+        const releaseDesc = releaseName && releaseName !== tag ? ` <span class="event-desc">${releaseName}</span>` : '';
+        return `${this.capitalize(event.payload?.action)} release in ${repoLink}${tagLink}${releaseDesc}`;
       case 'PublicEvent':
         return `Made ${repoLink} public`;
       default:
@@ -392,6 +394,15 @@ class GitHubRepos extends HTMLElement {
         .activity-desc .commit-hash:hover {
           color: #0969da;
           text-decoration: none;
+        }
+
+        .activity-desc .event-desc {
+          color: #57606a;
+          font-style: italic;
+        }
+
+        .activity-desc .event-desc::before {
+          content: "— ";
         }
 
         .activity-time {

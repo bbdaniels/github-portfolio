@@ -36,70 +36,11 @@ class GitHubRepos extends HTMLElement {
       const repos = await reposRes.json();
       const events = eventsRes.ok ? await eventsRes.json() : [];
 
-      // Fetch PR/issue titles for events that have them
-      await this.enrichEventsWithTitles(events);
-
       this.shadowRoot.innerHTML = this.getStyles() + this.buildHTML(profile, repos, events);
       this.setupSearch();
     } catch (err) {
       this.shadowRoot.innerHTML = this.getStyles() + `<p class="error">Failed to load GitHub data</p>`;
     }
-  }
-
-  async enrichEventsWithTitles(events) {
-    // Collect unique URLs to fetch (PRs, issues, and commits)
-    const toFetch = [];
-
-    events.forEach(event => {
-      if (event.type === 'PushEvent' && event.payload?.head && event.repo?.name) {
-        const url = `https://api.github.com/repos/${event.repo.name}/commits/${event.payload.head}`;
-        toFetch.push({ url, event, type: 'commit' });
-      } else if (event.type === 'PullRequestEvent' && event.payload?.pull_request?.url) {
-        toFetch.push({ url: event.payload.pull_request.url, event, type: 'pr' });
-      } else if (event.type === 'PullRequestReviewEvent' && event.payload?.pull_request?.url) {
-        toFetch.push({ url: event.payload.pull_request.url, event, type: 'pr' });
-      } else if (event.type === 'PullRequestReviewCommentEvent' && event.payload?.pull_request?.url) {
-        toFetch.push({ url: event.payload.pull_request.url, event, type: 'pr' });
-      } else if (event.type === 'IssuesEvent' && event.payload?.issue?.url) {
-        toFetch.push({ url: event.payload.issue.url, event, type: 'issue' });
-      } else if (event.type === 'IssueCommentEvent' && event.payload?.issue?.url) {
-        toFetch.push({ url: event.payload.issue.url, event, type: 'issue' });
-      }
-    });
-
-    // Dedupe by URL and limit to 15 to avoid rate limits
-    const seen = new Set();
-    const uniqueFetches = toFetch.filter(item => {
-      if (seen.has(item.url)) return false;
-      seen.add(item.url);
-      return true;
-    }).slice(0, 15);
-
-    const results = await Promise.allSettled(
-      uniqueFetches.map(item => fetch(item.url).then(r => r.ok ? r.json() : null))
-    );
-
-    // Store titles back on events
-    results.forEach((result, i) => {
-      if (result.status === 'fulfilled' && result.value) {
-        const { url, type } = uniqueFetches[i];
-        let title;
-        if (type === 'commit') {
-          // Get first line of commit message
-          title = result.value.commit?.message?.split('\n')[0];
-        } else {
-          title = result.value.title;
-        }
-        if (title) {
-          // Find all events with this URL and add title
-          toFetch.forEach(item => {
-            if (item.url === url) {
-              item.event._title = title;
-            }
-          });
-        }
-      }
-    });
   }
 
   capitalize(str) {
@@ -116,8 +57,7 @@ class GitHubRepos extends HTMLElement {
       case 'PushEvent':
         const hash = event.payload?.head?.substring(0, 7);
         const commitLink = hash ? ` <a href="${repoUrl}/commit/${event.payload.head}" target="_blank" rel="noopener" class="commit-hash">${hash}</a>` : '';
-        const commitMsg = event._title ? ` <span class="event-desc">${event._title}</span>` : '';
-        return `Pushed to ${repoLink}${commitLink}${commitMsg}`;
+        return `Pushed to ${repoLink}${commitLink}`;
       case 'CreateEvent':
         const refType = event.payload?.ref_type || 'repository';
         const ref = event.payload?.ref;
@@ -131,28 +71,23 @@ class GitHubRepos extends HTMLElement {
       case 'IssuesEvent':
         const issueNum = event.payload?.issue?.number;
         const issueLink = issueNum ? ` <a href="${repoUrl}/issues/${issueNum}" target="_blank" rel="noopener" class="commit-hash">#${issueNum}</a>` : '';
-        const issueTitle = event._title ? ` <span class="event-desc">${event._title}</span>` : '';
-        return `${this.capitalize(event.payload?.action)} issue in ${repoLink}${issueLink}${issueTitle}`;
+        return `${this.capitalize(event.payload?.action)} issue in ${repoLink}${issueLink}`;
       case 'IssueCommentEvent':
         const commentIssueNum = event.payload?.issue?.number;
         const commentIssueLink = commentIssueNum ? ` <a href="${repoUrl}/issues/${commentIssueNum}" target="_blank" rel="noopener" class="commit-hash">#${commentIssueNum}</a>` : '';
-        const commentIssueTitle = event._title ? ` <span class="event-desc">${event._title}</span>` : '';
-        return `Commented on issue in ${repoLink}${commentIssueLink}${commentIssueTitle}`;
+        return `Commented on issue in ${repoLink}${commentIssueLink}`;
       case 'PullRequestEvent':
         const prNum = event.payload?.number;
         const prLink = prNum ? ` <a href="${repoUrl}/pull/${prNum}" target="_blank" rel="noopener" class="commit-hash">#${prNum}</a>` : '';
-        const prTitle = event._title ? ` <span class="event-desc">${event._title}</span>` : '';
-        return `${this.capitalize(event.payload?.action)} PR in ${repoLink}${prLink}${prTitle}`;
+        return `${this.capitalize(event.payload?.action)} PR in ${repoLink}${prLink}`;
       case 'PullRequestReviewEvent':
         const reviewPrNum = event.payload?.pull_request?.number;
         const reviewPrLink = reviewPrNum ? ` <a href="${repoUrl}/pull/${reviewPrNum}" target="_blank" rel="noopener" class="commit-hash">#${reviewPrNum}</a>` : '';
-        const reviewPrTitle = event._title ? ` <span class="event-desc">${event._title}</span>` : '';
-        return `Reviewed PR in ${repoLink}${reviewPrLink}${reviewPrTitle}`;
+        return `Reviewed PR in ${repoLink}${reviewPrLink}`;
       case 'PullRequestReviewCommentEvent':
         const commentPrNum = event.payload?.pull_request?.number;
         const commentPrLink = commentPrNum ? ` <a href="${repoUrl}/pull/${commentPrNum}" target="_blank" rel="noopener" class="commit-hash">#${commentPrNum}</a>` : '';
-        const commentPrTitle = event._title ? ` <span class="event-desc">${event._title}</span>` : '';
-        return `Commented on PR in ${repoLink}${commentPrLink}${commentPrTitle}`;
+        return `Commented on PR in ${repoLink}${commentPrLink}`;
       case 'ReleaseEvent':
         const tag = event.payload?.release?.tag_name;
         const releaseName = event.payload?.release?.name;
@@ -463,15 +398,6 @@ class GitHubRepos extends HTMLElement {
         .activity-desc .commit-hash:hover {
           color: #0969da;
           text-decoration: none;
-        }
-
-        .activity-desc .event-desc {
-          color: #57606a;
-          font-style: italic;
-        }
-
-        .activity-desc .event-desc::before {
-          content: "— ";
         }
 
         .activity-time {

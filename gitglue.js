@@ -23,7 +23,7 @@ class GitHubRepos extends HTMLElement {
     this.shadowRoot.innerHTML = this.getStyles() + '<div class="loading">Loading repositories...</div>';
 
     try {
-      // Fetch user profile, repos, and events in parallel
+      // Fetch user profile, repos, and contribution data in parallel
       const [profileRes, reposRes, eventsRes] = await Promise.all([
         fetch(`https://api.github.com/users/${user}`),
         fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=100`),

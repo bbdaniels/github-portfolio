@@ -73,13 +73,21 @@ class GitHubRepos extends HTMLElement {
       case 'IssueCommentEvent':
         return `Commented on issue in ${repoLink}`;
       case 'PullRequestEvent':
-        return `${this.capitalize(event.payload?.action)} PR in ${repoLink}`;
+        const prNum = event.payload?.number;
+        const prLink = prNum ? ` <a href="${repoUrl}/pull/${prNum}" target="_blank" rel="noopener" class="commit-hash">#${prNum}</a>` : '';
+        return `${this.capitalize(event.payload?.action)} PR in ${repoLink}${prLink}`;
       case 'PullRequestReviewEvent':
-        return `Reviewed PR in ${repoLink}`;
+        const reviewPrNum = event.payload?.pull_request?.number;
+        const reviewPrLink = reviewPrNum ? ` <a href="${repoUrl}/pull/${reviewPrNum}" target="_blank" rel="noopener" class="commit-hash">#${reviewPrNum}</a>` : '';
+        return `Reviewed PR in ${repoLink}${reviewPrLink}`;
       case 'PullRequestReviewCommentEvent':
-        return `Commented on PR in ${repoLink}`;
+        const commentPrNum = event.payload?.pull_request?.number;
+        const commentPrLink = commentPrNum ? ` <a href="${repoUrl}/pull/${commentPrNum}" target="_blank" rel="noopener" class="commit-hash">#${commentPrNum}</a>` : '';
+        return `Commented on PR in ${repoLink}${commentPrLink}`;
       case 'ReleaseEvent':
-        return `${this.capitalize(event.payload?.action)} release in ${repoLink}`;
+        const tag = event.payload?.release?.tag_name;
+        const tagLink = tag ? ` <a href="${repoUrl}/releases/tag/${tag}" target="_blank" rel="noopener" class="commit-hash">${tag}</a>` : '';
+        return `${this.capitalize(event.payload?.action)} release in ${repoLink}${tagLink}`;
       case 'PublicEvent':
         return `Made ${repoLink} public`;
       default:

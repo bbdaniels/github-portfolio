@@ -23,12 +23,11 @@ class GitHubRepos extends HTMLElement {
     this.shadowRoot.innerHTML = this.getStyles() + '<div class="loading">Loading repositories...</div>';
 
     try {
-      // Fetch user profile, repos, events, and pinned repos in parallel
-      const [profileRes, reposRes, eventsRes, pinnedRepos] = await Promise.all([
+      // Fetch user profile, repos, and events in parallel
+      const [profileRes, reposRes, eventsRes] = await Promise.all([
         fetch(`https://api.github.com/users/${user}`),
         fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=100`),
-        fetch(`https://api.github.com/users/${user}/events?per_page=100`),
-        this.fetchPinnedRepos(user)
+        fetch(`https://api.github.com/users/${user}/events?per_page=100`)
       ]);
 
       if (!profileRes.ok || !reposRes.ok) throw new Error('Failed to fetch');
@@ -37,32 +36,6 @@ class GitHubRepos extends HTMLElement {
       const repos = await reposRes.json();
       const events = eventsRes.ok ? await eventsRes.json() : [];
 
-      // Mark pinned repos and fetch any from other orgs
-      const pinnedSet = new Set(pinnedRepos.map(r => r.toLowerCase()));
-      const repoNames = new Set(repos.map(r => r.full_name.toLowerCase()));
-
-      repos.forEach(repo => {
-        repo._pinned = pinnedSet.has(repo.full_name.toLowerCase());
-      });
-
-      // Fetch pinned repos from other orgs that aren't in user's repos
-      const externalPinned = pinnedRepos.filter(path => !repoNames.has(path.toLowerCase()));
-      if (externalPinned.length > 0) {
-        const externalRepos = await Promise.all(
-          externalPinned.map(path =>
-            fetch(`https://api.github.com/repos/${path}`)
-              .then(r => r.ok ? r.json() : null)
-              .catch(() => null)
-          )
-        );
-        externalRepos.forEach(repo => {
-          if (repo) {
-            repo._pinned = true;
-            repos.push(repo);
-          }
-        });
-      }
-
       // Fetch PR/issue titles for events that have them
       await this.enrichEventsWithTitles(events);
 
@@ -70,30 +43,6 @@ class GitHubRepos extends HTMLElement {
       this.setupSearch();
     } catch (err) {
       this.shadowRoot.innerHTML = this.getStyles() + `<p class="error">Failed to load GitHub data</p>`;
-    }
-  }
-
-  async fetchPinnedRepos(user) {
-    try {
-      const res = await fetch(`https://github.com/${user}`);
-      if (!res.ok) return [];
-      const html = await res.text();
-
-      // Extract full repo paths (owner/repo) from pinned section
-      const pinnedRepos = [];
-      const repoMatches = html.matchAll(/href="\/([^/]+\/[^"?]+)"[^>]*class="[^"]*Link[^"]*text-bold[^"]*"[^>]*>/g);
-
-      for (const match of repoMatches) {
-        const path = match[1];
-        // Skip stargazers/forks links
-        if (!path.includes('/stargazers') && !path.includes('/forks')) {
-          pinnedRepos.push(path);
-        }
-      }
-
-      return pinnedRepos;
-    } catch {
-      return [];
     }
   }
 
@@ -252,12 +201,7 @@ class GitHubRepos extends HTMLElement {
 
         <div class="repos">
           ${repos
-            .sort((a, b) => {
-              // Pinned repos first, then by updated date
-              if (a._pinned && !b._pinned) return -1;
-              if (!a._pinned && b._pinned) return 1;
-              return new Date(b.updated_at) - new Date(a.updated_at);
-            })
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
             .map(repo => this.buildRepoCard(repo)).join('')}
         </div>
       </div>
@@ -322,7 +266,6 @@ class GitHubRepos extends HTMLElement {
         <div class="repo-header">
           <svg viewBox="0 0 16 16" width="16" height="16" class="repo-icon"><path fill="currentColor" d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"></path></svg>
           <a href="${repo.html_url}" target="_blank" rel="noopener" class="repo-name">${repo.name}</a>
-          ${repo._pinned ? '<span class="pinned-badge">Pinned</span>' : ''}
           ${repo.fork ? '<span class="fork-badge">Fork</span>' : ''}
         </div>
         ${repo.description ? `<p class="repo-desc">${repo.description}</p>` : ''}
@@ -601,14 +544,6 @@ class GitHubRepos extends HTMLElement {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-        }
-
-        .pinned-badge {
-          font-size: 11px;
-          padding: 2px 6px;
-          background: #fff8c5;
-          border-radius: 12px;
-          color: #9a6700;
         }
 
         .fork-badge {

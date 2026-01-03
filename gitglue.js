@@ -37,11 +37,31 @@ class GitHubRepos extends HTMLElement {
       const repos = await reposRes.json();
       const events = eventsRes.ok ? await eventsRes.json() : [];
 
-      // Mark pinned repos
+      // Mark pinned repos and fetch any from other orgs
       const pinnedSet = new Set(pinnedRepos.map(r => r.toLowerCase()));
+      const repoNames = new Set(repos.map(r => r.full_name.toLowerCase()));
+
       repos.forEach(repo => {
-        repo._pinned = pinnedSet.has(repo.name.toLowerCase());
+        repo._pinned = pinnedSet.has(repo.full_name.toLowerCase());
       });
+
+      // Fetch pinned repos from other orgs that aren't in user's repos
+      const externalPinned = pinnedRepos.filter(path => !repoNames.has(path.toLowerCase()));
+      if (externalPinned.length > 0) {
+        const externalRepos = await Promise.all(
+          externalPinned.map(path =>
+            fetch(`https://api.github.com/repos/${path}`)
+              .then(r => r.ok ? r.json() : null)
+              .catch(() => null)
+          )
+        );
+        externalRepos.forEach(repo => {
+          if (repo) {
+            repo._pinned = true;
+            repos.push(repo);
+          }
+        });
+      }
 
       // Fetch PR/issue titles for events that have them
       await this.enrichEventsWithTitles(events);
@@ -59,14 +79,16 @@ class GitHubRepos extends HTMLElement {
       if (!res.ok) return [];
       const html = await res.text();
 
-      // Extract pinned repo names from the profile page
-      // Look for links within the pinned items section
-      const pinnedSection = html.match(/js-pinned-items-reorder-list[\s\S]*?<\/ol>/)?.[0] || '';
-      const repoMatches = pinnedSection.matchAll(/href="\/[^/]+\/([^"]+)"[^>]*class="[^"]*Link[^"]*"[^>]*><span class="repo">/g);
-
+      // Extract full repo paths (owner/repo) from pinned section
       const pinnedRepos = [];
+      const repoMatches = html.matchAll(/href="\/([^/]+\/[^"?]+)"[^>]*class="[^"]*Link[^"]*text-bold[^"]*"[^>]*>/g);
+
       for (const match of repoMatches) {
-        pinnedRepos.push(match[1]);
+        const path = match[1];
+        // Skip stargazers/forks links
+        if (!path.includes('/stargazers') && !path.includes('/forks')) {
+          pinnedRepos.push(path);
+        }
       }
 
       return pinnedRepos;

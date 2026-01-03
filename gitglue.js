@@ -48,36 +48,42 @@ class GitHubRepos extends HTMLElement {
   }
 
   formatEventDescription(event) {
-    const repo = event.repo?.name?.split('/')[1] || event.repo?.name || 'unknown';
+    const repoFullName = event.repo?.name || 'unknown';
+    const repoName = repoFullName.split('/')[1] || repoFullName;
+    const repoUrl = `https://github.com/${repoFullName}`;
+    const repoLink = `<a href="${repoUrl}" target="_blank" rel="noopener">${repoName}</a>`;
+
     switch (event.type) {
       case 'PushEvent':
-        return `Pushed to <strong>${repo}</strong>`;
+        const hash = event.payload?.head?.substring(0, 7);
+        const commitLink = hash ? ` <a href="${repoUrl}/commit/${event.payload.head}" target="_blank" rel="noopener" class="commit-hash">${hash}</a>` : '';
+        return `Pushed to ${repoLink}${commitLink}`;
       case 'CreateEvent':
         const refType = event.payload?.ref_type || 'repository';
         const ref = event.payload?.ref;
-        return ref ? `Created ${refType} <strong>${ref}</strong> in <strong>${repo}</strong>` : `Created ${refType} <strong>${repo}</strong>`;
+        return ref ? `Created ${refType} <strong>${ref}</strong> in ${repoLink}` : `Created ${refType} ${repoLink}`;
       case 'DeleteEvent':
-        return `Deleted ${event.payload?.ref_type} <strong>${event.payload?.ref}</strong> from <strong>${repo}</strong>`;
+        return `Deleted ${event.payload?.ref_type} <strong>${event.payload?.ref}</strong> from ${repoLink}`;
       case 'WatchEvent':
-        return `Starred <strong>${repo}</strong>`;
+        return `Starred ${repoLink}`;
       case 'ForkEvent':
-        return `Forked <strong>${repo}</strong>`;
+        return `Forked ${repoLink}`;
       case 'IssuesEvent':
-        return `${this.capitalize(event.payload?.action)} issue in <strong>${repo}</strong>`;
+        return `${this.capitalize(event.payload?.action)} issue in ${repoLink}`;
       case 'IssueCommentEvent':
-        return `Commented on issue in <strong>${repo}</strong>`;
+        return `Commented on issue in ${repoLink}`;
       case 'PullRequestEvent':
-        return `${this.capitalize(event.payload?.action)} PR in <strong>${repo}</strong>`;
+        return `${this.capitalize(event.payload?.action)} PR in ${repoLink}`;
       case 'PullRequestReviewEvent':
-        return `Reviewed PR in <strong>${repo}</strong>`;
+        return `Reviewed PR in ${repoLink}`;
       case 'PullRequestReviewCommentEvent':
-        return `Commented on PR in <strong>${repo}</strong>`;
+        return `Commented on PR in ${repoLink}`;
       case 'ReleaseEvent':
-        return `${this.capitalize(event.payload?.action)} release in <strong>${repo}</strong>`;
+        return `${this.capitalize(event.payload?.action)} release in ${repoLink}`;
       case 'PublicEvent':
-        return `Made <strong>${repo}</strong> public`;
+        return `Made ${repoLink} public`;
       default:
-        return `Activity in <strong>${repo}</strong>`;
+        return `Activity in ${repoLink}`;
     }
   }
 
@@ -355,8 +361,29 @@ class GitHubRepos extends HTMLElement {
           color: #24292f;
         }
 
-        .activity-desc strong {
+        .activity-desc a {
           color: #0969da;
+          font-weight: 600;
+        }
+
+        .activity-desc a:hover {
+          text-decoration: underline;
+        }
+
+        .activity-desc .commit-hash {
+          font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+          font-size: 12px;
+          font-weight: 400;
+          color: #57606a;
+          background: #f6f8fa;
+          padding: 2px 6px;
+          border-radius: 4px;
+          margin-left: 4px;
+        }
+
+        .activity-desc .commit-hash:hover {
+          color: #0969da;
+          text-decoration: none;
         }
 
         .activity-time {

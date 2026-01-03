@@ -18,10 +18,11 @@ That's it. The component auto-populates with your GitHub profile and all your re
 ## Features
 
 - Shows profile header with avatar, bio, and stats
+- Scrollable recent activity log showing commits, stars, PRs, and more
 - Displays all repos in a responsive grid
 - Search/filter repos by name or description
 - Shows language, stars, forks, and last updated
-- Dark theme matching GitHub's design
+- Light theme matching GitHub's design
 - Works on any platform (Squarespace, WordPress, etc.)
 
 ## Demo

@@ -36,49 +36,49 @@ class GitHubRepos extends HTMLElement {
       const repos = await reposRes.json();
       const events = eventsRes.ok ? await eventsRes.json() : [];
 
-      // Build contribution data from events
-      const contributions = this.buildContributionData(events);
-
-      this.shadowRoot.innerHTML = this.getStyles() + this.buildHTML(profile, repos, contributions);
+      this.shadowRoot.innerHTML = this.getStyles() + this.buildHTML(profile, repos, events);
       this.setupSearch();
     } catch (err) {
       this.shadowRoot.innerHTML = this.getStyles() + `<p class="error">Failed to load GitHub data</p>`;
     }
   }
 
-  buildContributionData(events) {
-    // Group events by week for last 12 weeks
-    const weeks = [];
-    const today = new Date();
-
-    // Initialize 12 weeks
-    for (let i = 11; i >= 0; i--) {
-      const weekStart = new Date(today);
-      weekStart.setDate(weekStart.getDate() - (i * 7) - today.getDay());
-      weeks.push({
-        start: weekStart,
-        count: 0,
-        label: weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      });
+  formatEventDescription(event) {
+    const repo = event.repo?.name?.split('/')[1] || event.repo?.name || 'unknown';
+    switch (event.type) {
+      case 'PushEvent':
+        const commits = event.payload?.commits?.length || 0;
+        return `Pushed ${commits} commit${commits !== 1 ? 's' : ''} to <strong>${repo}</strong>`;
+      case 'CreateEvent':
+        const refType = event.payload?.ref_type || 'repository';
+        const ref = event.payload?.ref;
+        return ref ? `Created ${refType} <strong>${ref}</strong> in <strong>${repo}</strong>` : `Created ${refType} <strong>${repo}</strong>`;
+      case 'DeleteEvent':
+        return `Deleted ${event.payload?.ref_type} <strong>${event.payload?.ref}</strong> from <strong>${repo}</strong>`;
+      case 'WatchEvent':
+        return `Starred <strong>${repo}</strong>`;
+      case 'ForkEvent':
+        return `Forked <strong>${repo}</strong>`;
+      case 'IssuesEvent':
+        return `${event.payload?.action} issue in <strong>${repo}</strong>`;
+      case 'IssueCommentEvent':
+        return `Commented on issue in <strong>${repo}</strong>`;
+      case 'PullRequestEvent':
+        return `${event.payload?.action} PR in <strong>${repo}</strong>`;
+      case 'PullRequestReviewEvent':
+        return `Reviewed PR in <strong>${repo}</strong>`;
+      case 'PullRequestReviewCommentEvent':
+        return `Commented on PR in <strong>${repo}</strong>`;
+      case 'ReleaseEvent':
+        return `${event.payload?.action} release in <strong>${repo}</strong>`;
+      case 'PublicEvent':
+        return `Made <strong>${repo}</strong> public`;
+      default:
+        return `Activity in <strong>${repo}</strong>`;
     }
-
-    // Count events per week
-    events.forEach(event => {
-      const eventDate = new Date(event.created_at);
-      for (let i = 0; i < weeks.length; i++) {
-        const weekEnd = new Date(weeks[i].start);
-        weekEnd.setDate(weekEnd.getDate() + 7);
-        if (eventDate >= weeks[i].start && eventDate < weekEnd) {
-          weeks[i].count++;
-          break;
-        }
-      }
-    });
-
-    return weeks;
   }
 
-  buildHTML(profile, repos, contributions) {
+  buildHTML(profile, repos, events) {
     return `
       <div class="container">
         <header class="profile">
@@ -103,8 +103,8 @@ class GitHubRepos extends HTMLElement {
           </div>
         </header>
 
-        <div class="contrib-graph">
-          ${this.buildContributionGraph(contributions)}
+        <div class="activity-log">
+          ${this.buildActivityLog(events)}
         </div>
 
         <div class="search-container">
@@ -120,43 +120,34 @@ class GitHubRepos extends HTMLElement {
     `;
   }
 
-  buildContributionGraph(weeks) {
-    const barWidth = 50;
-    const barGap = 8;
-    const maxHeight = 60;
-    const width = weeks.length * (barWidth + barGap);
-    const height = maxHeight + 30; // Extra space for labels
+  buildActivityLog(events) {
+    if (!events || events.length === 0) {
+      return `
+        <div class="activity-header">
+          <span class="activity-title">Recent Activity</span>
+        </div>
+        <div class="activity-empty">No recent activity</div>
+      `;
+    }
 
-    const maxCount = Math.max(...weeks.map(w => w.count), 1);
-
-    let bars = '';
-    weeks.forEach((week, i) => {
-      const barHeight = (week.count / maxCount) * maxHeight || 2; // Min height of 2
-      const x = i * (barWidth + barGap);
-      const y = maxHeight - barHeight;
-
-      // Bar
-      bars += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="3" fill="#40c463" class="activity-bar"><title>${week.label}: ${week.count} events</title></rect>`;
-
-      // Label
-      bars += `<text x="${x + barWidth / 2}" y="${maxHeight + 16}" text-anchor="middle" class="bar-label">${week.label}</text>`;
-
-      // Count on top of bar
-      if (week.count > 0) {
-        bars += `<text x="${x + barWidth / 2}" y="${y - 4}" text-anchor="middle" class="bar-count">${week.count}</text>`;
-      }
-    });
-
-    const totalEvents = weeks.reduce((sum, w) => sum + w.count, 0);
+    const items = events.slice(0, 30).map(event => {
+      const date = new Date(event.created_at);
+      return `
+        <div class="activity-item">
+          <span class="activity-desc">${this.formatEventDescription(event)}</span>
+          <span class="activity-time">${this.timeAgo(date)}</span>
+        </div>
+      `;
+    }).join('');
 
     return `
       <div class="activity-header">
-        <span class="activity-title">Activity (last 12 weeks)</span>
-        <span class="activity-total">${totalEvents} events</span>
+        <span class="activity-title">Recent Activity</span>
+        <span class="activity-total">${events.length} events</span>
       </div>
-      <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" class="contrib-svg">
-        ${bars}
-      </svg>
+      <div class="activity-list">
+        ${items}
+      </div>
     `;
   }
 
@@ -313,14 +304,13 @@ class GitHubRepos extends HTMLElement {
         .stats a:hover { color: #0969da; }
         .stats strong { color: #24292f; }
 
-        /* Activity Chart */
-        .contrib-graph {
+        /* Activity Log */
+        .activity-log {
           margin-bottom: 24px;
           padding: 16px;
           background: #ffffff;
           border: 1px solid #d0d7de;
           border-radius: 6px;
-          overflow-x: auto;
         }
 
         .activity-header {
@@ -340,28 +330,44 @@ class GitHubRepos extends HTMLElement {
           color: #57606a;
         }
 
-        .contrib-svg {
-          display: block;
-          max-width: 100%;
+        .activity-list {
+          max-height: 200px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
         }
 
-        .bar-label {
-          font-size: 10px;
-          fill: #57606a;
+        .activity-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 12px;
+          background: #f6f8fa;
+          border-radius: 6px;
+          font-size: 13px;
         }
 
-        .bar-count {
-          font-size: 11px;
-          font-weight: 600;
-          fill: #24292f;
+        .activity-desc {
+          color: #24292f;
         }
 
-        .activity-bar {
-          transition: fill 0.15s;
+        .activity-desc strong {
+          color: #0969da;
         }
 
-        .activity-bar:hover {
-          fill: #2ea043;
+        .activity-time {
+          color: #57606a;
+          font-size: 12px;
+          white-space: nowrap;
+          margin-left: 12px;
+        }
+
+        .activity-empty {
+          color: #57606a;
+          font-size: 14px;
+          text-align: center;
+          padding: 24px;
         }
 
         /* Search */

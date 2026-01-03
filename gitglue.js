@@ -47,40 +47,57 @@ class GitHubRepos extends HTMLElement {
   }
 
   async enrichEventsWithTitles(events) {
-    // Collect unique PR/issue URLs to fetch
-    const toFetch = new Map();
+    // Collect unique URLs to fetch (PRs, issues, and commits)
+    const toFetch = [];
 
     events.forEach(event => {
-      if (event.type === 'PullRequestEvent' && event.payload?.pull_request?.url) {
-        toFetch.set(event.payload.pull_request.url, event);
+      if (event.type === 'PushEvent' && event.payload?.head && event.repo?.name) {
+        const url = `https://api.github.com/repos/${event.repo.name}/commits/${event.payload.head}`;
+        toFetch.push({ url, event, type: 'commit' });
+      } else if (event.type === 'PullRequestEvent' && event.payload?.pull_request?.url) {
+        toFetch.push({ url: event.payload.pull_request.url, event, type: 'pr' });
       } else if (event.type === 'PullRequestReviewEvent' && event.payload?.pull_request?.url) {
-        toFetch.set(event.payload.pull_request.url, event);
+        toFetch.push({ url: event.payload.pull_request.url, event, type: 'pr' });
       } else if (event.type === 'PullRequestReviewCommentEvent' && event.payload?.pull_request?.url) {
-        toFetch.set(event.payload.pull_request.url, event);
+        toFetch.push({ url: event.payload.pull_request.url, event, type: 'pr' });
       } else if (event.type === 'IssuesEvent' && event.payload?.issue?.url) {
-        toFetch.set(event.payload.issue.url, event);
+        toFetch.push({ url: event.payload.issue.url, event, type: 'issue' });
       } else if (event.type === 'IssueCommentEvent' && event.payload?.issue?.url) {
-        toFetch.set(event.payload.issue.url, event);
+        toFetch.push({ url: event.payload.issue.url, event, type: 'issue' });
       }
     });
 
-    // Fetch titles in parallel (limit to first 10 to avoid rate limits)
-    const urls = [...toFetch.keys()].slice(0, 10);
+    // Dedupe by URL and limit to 15 to avoid rate limits
+    const seen = new Set();
+    const uniqueFetches = toFetch.filter(item => {
+      if (seen.has(item.url)) return false;
+      seen.add(item.url);
+      return true;
+    }).slice(0, 15);
+
     const results = await Promise.allSettled(
-      urls.map(url => fetch(url).then(r => r.ok ? r.json() : null))
+      uniqueFetches.map(item => fetch(item.url).then(r => r.ok ? r.json() : null))
     );
 
     // Store titles back on events
     results.forEach((result, i) => {
-      if (result.status === 'fulfilled' && result.value?.title) {
-        const url = urls[i];
-        // Find all events with this URL and add title
-        events.forEach(event => {
-          const eventUrl = event.payload?.pull_request?.url || event.payload?.issue?.url;
-          if (eventUrl === url) {
-            event._title = result.value.title;
-          }
-        });
+      if (result.status === 'fulfilled' && result.value) {
+        const { url, type } = uniqueFetches[i];
+        let title;
+        if (type === 'commit') {
+          // Get first line of commit message
+          title = result.value.commit?.message?.split('\n')[0];
+        } else {
+          title = result.value.title;
+        }
+        if (title) {
+          // Find all events with this URL and add title
+          toFetch.forEach(item => {
+            if (item.url === url) {
+              item.event._title = title;
+            }
+          });
+        }
       }
     });
   }
@@ -99,7 +116,8 @@ class GitHubRepos extends HTMLElement {
       case 'PushEvent':
         const hash = event.payload?.head?.substring(0, 7);
         const commitLink = hash ? ` <a href="${repoUrl}/commit/${event.payload.head}" target="_blank" rel="noopener" class="commit-hash">${hash}</a>` : '';
-        return `Pushed to ${repoLink}${commitLink}`;
+        const commitMsg = event._title ? ` <span class="event-desc">${event._title}</span>` : '';
+        return `Pushed to ${repoLink}${commitLink}${commitMsg}`;
       case 'CreateEvent':
         const refType = event.payload?.ref_type || 'repository';
         const ref = event.payload?.ref;

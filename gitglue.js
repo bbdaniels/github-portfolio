@@ -136,7 +136,7 @@ class GitHubRepos extends HTMLElement {
 
         <div class="repos">
           ${repos
-            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+            .sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at))
             .map(repo => this.buildRepoCard(repo)).join('')}
         </div>
       </div>
@@ -208,7 +208,7 @@ class GitHubRepos extends HTMLElement {
           ${lang}
           ${stars}
           ${forks}
-          <span class="updated">Updated ${this.timeAgo(new Date(repo.updated_at))}</span>
+          <span class="updated">Updated ${this.timeAgo(new Date(repo.pushed_at))}</span>
         </div>
       </article>
     `;

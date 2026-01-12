@@ -1,5 +1,5 @@
 /**
- * GitGlue - Display GitHub repos as beautiful cards
+ * github-portfolio - Display GitHub repos as a beautiful portfolio
  * Usage: <github-repos user="username"></github-repos>
  */
 
@@ -102,6 +102,11 @@ class GitHubRepos extends HTMLElement {
   }
 
   buildHTML(profile, repos, events) {
+    // Split repos into those with Pages and those without
+    const sortedRepos = repos.sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at));
+    const pagesRepos = sortedRepos.filter(repo => repo.has_pages);
+    const otherRepos = sortedRepos.filter(repo => !repo.has_pages);
+
     return `
       <div class="container">
         <header class="profile">
@@ -130,14 +135,26 @@ class GitHubRepos extends HTMLElement {
           ${this.buildActivityLog(events)}
         </div>
 
+        ${pagesRepos.length > 0 ? `
+          <div class="section-header">
+            <h2 class="section-title">Projects</h2>
+            <span class="section-count">${pagesRepos.length} with live demos</span>
+          </div>
+          <div class="repos projects-repos">
+            ${pagesRepos.map(repo => this.buildRepoCard(repo, true)).join('')}
+          </div>
+        ` : ''}
+
+        <div class="section-header">
+          <h2 class="section-title">All Repositories</h2>
+        </div>
+
         <div class="search-container">
           <input type="text" class="search" placeholder="Search repositories...">
         </div>
 
         <div class="repos">
-          ${repos
-            .sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at))
-            .map(repo => this.buildRepoCard(repo)).join('')}
+          ${otherRepos.map(repo => this.buildRepoCard(repo)).join('')}
         </div>
       </div>
     `;
@@ -174,7 +191,7 @@ class GitHubRepos extends HTMLElement {
     `;
   }
 
-  buildRepoCard(repo) {
+  buildRepoCard(repo, showPagesLink = false) {
     const lang = repo.language ? `
       <span class="lang">
         <span class="lang-dot" style="background: ${LANG_COLORS[repo.language] || '#8b949e'}"></span>
@@ -196,12 +213,22 @@ class GitHubRepos extends HTMLElement {
       </a>
     ` : '';
 
+    // Build Pages URL from repo owner and name
+    const pagesUrl = repo.homepage || `https://${repo.owner.login}.github.io/${repo.name}/`;
+    const pagesLink = showPagesLink ? `
+      <a href="${pagesUrl}" target="_blank" rel="noopener" class="pages-link">
+        <svg viewBox="0 0 16 16" width="14" height="14"><path fill="currentColor" d="M4.75 0a.75.75 0 0 0 0 1.5h5.69L.22 11.72a.75.75 0 1 0 1.06 1.06L11.5 2.56v5.69a.75.75 0 0 0 1.5 0V.75a.75.75 0 0 0-.75-.75H4.75Z"></path></svg>
+        View Site
+      </a>
+    ` : '';
+
     return `
       <article class="repo" data-name="${repo.name.toLowerCase()}" data-desc="${(repo.description || '').toLowerCase()}">
         <div class="repo-header">
           <svg viewBox="0 0 16 16" width="16" height="16" class="repo-icon"><path fill="currentColor" d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"></path></svg>
           <a href="${repo.html_url}" target="_blank" rel="noopener" class="repo-name">${repo.name}</a>
           ${repo.fork ? '<span class="fork-badge">Fork</span>' : ''}
+          ${pagesLink}
         </div>
         ${repo.description ? `<p class="repo-desc">${repo.description}</p>` : ''}
         <div class="repo-meta">
@@ -412,6 +439,54 @@ class GitHubRepos extends HTMLElement {
           font-size: 14px;
           text-align: center;
           padding: 24px;
+        }
+
+        /* Section Headers */
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 24px 0 16px 0;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #d0d7de;
+        }
+
+        .section-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #24292f;
+          margin: 0;
+        }
+
+        .section-count {
+          font-size: 14px;
+          color: #57606a;
+        }
+
+        .projects-repos {
+          margin-bottom: 32px;
+        }
+
+        /* Pages Link */
+        .pages-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          margin-left: auto;
+          padding: 4px 10px;
+          font-size: 12px;
+          font-weight: 500;
+          color: #ffffff;
+          background: #238636;
+          border-radius: 6px;
+          transition: background 0.15s;
+        }
+        .pages-link:hover {
+          background: #2ea043;
+          text-decoration: none;
+        }
+        .pages-link svg {
+          fill: currentColor;
         }
 
         /* Search */

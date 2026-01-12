@@ -2,14 +2,14 @@
   <br><br>
 <img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg">
 
-# GitGlue
+# github-portfolio
 
-Display your GitHub repositories as beautiful, searchable cards. Single file, no dependencies, works anywhere.
+Display your GitHub repositories as a beautiful portfolio. Highlights projects with live GitHub Pages demos. Single file, no dependencies, works anywhere.
 
 ## Usage
 
 ```html
-<script src="https://bbdaniels.github.io/GitGlue/gitglue.js"></script>
+<script src="https://bbdaniels.github.io/github-portfolio/github-portfolio.js"></script>
 <github-repos user="your-username"></github-repos>
 ```
 
@@ -17,6 +17,7 @@ That's it. The component auto-populates with your GitHub profile and all your re
 
 ## Features
 
+- **Projects section** - Repos with GitHub Pages are showcased at the top with "View Site" links
 - Shows profile header with avatar, bio, and stats
 - Scrollable recent activity log showing commits, stars, PRs, and more
 - Displays all repos in a responsive grid
@@ -27,4 +28,4 @@ That's it. The component auto-populates with your GitHub profile and all your re
 
 ## Demo
 
-[bbdaniels.github.io/GitGlue](https://bbdaniels.github.io/GitGlue/)
+[bbdaniels.github.io/github-portfolio](https://bbdaniels.github.io/github-portfolio/)

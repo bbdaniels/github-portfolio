@@ -9,7 +9,7 @@ Display your GitHub repositories as a beautiful portfolio. Highlights projects w
 ## Usage
 
 ```html
-<script src="https://bbdaniels.github.io/github-portfolio/github-portfolio.js"></script>
+<script src="https://www.benjaminbdaniels.com/github-portfolio/github-portfolio.js"></script>
 <github-repos user="your-username"></github-repos>
 ```
 
@@ -28,4 +28,4 @@ That's it. The component auto-populates with your GitHub profile and all your re
 
 ## Demo
 
-[bbdaniels.github.io/github-portfolio](https://bbdaniels.github.io/github-portfolio/)
+[bbdaniels.github.io/github-portfolio](https://www.benjaminbdaniels.com/github-portfolio/)

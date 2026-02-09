@@ -170,7 +170,9 @@ class GitHubRepos extends HTMLElement {
       `;
     }
 
-    const items = events.slice(0, 30).map(event => {
+    const items = events
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 30).map(event => {
       const date = new Date(event.created_at);
       return `
         <div class="activity-item">
@@ -361,6 +363,7 @@ class GitHubRepos extends HTMLElement {
           background: #ffffff;
           border: 1px solid #d0d7de;
           border-radius: 6px;
+          overflow: hidden;
         }
 
         .activity-header {
@@ -400,6 +403,10 @@ class GitHubRepos extends HTMLElement {
 
         .activity-desc {
           color: #24292f;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .activity-desc a {
@@ -513,7 +520,7 @@ class GitHubRepos extends HTMLElement {
         /* Repos Grid */
         .repos {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
           gap: 16px;
         }
 
@@ -522,6 +529,7 @@ class GitHubRepos extends HTMLElement {
           border: 1px solid #d0d7de;
           border-radius: 6px;
           padding: 16px;
+          min-width: 0;
           transition: border-color 0.15s, box-shadow 0.15s;
         }
         .repo:hover {

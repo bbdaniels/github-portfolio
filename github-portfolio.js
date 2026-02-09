@@ -619,6 +619,50 @@ class GitHubRepos extends HTMLElement {
           .repos { grid-template-columns: 1fr; }
           .updated { display: none; }
         }
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+          :host { color: #e5e5e5; }
+          a { color: #60a5fa; }
+          .loading { color: #a3a3a3; }
+          .error { color: #f85149; }
+          .profile { border-bottom-color: #333; }
+          .avatar { border-color: #333; }
+          .name { color: #e5e5e5; }
+          .name:hover { color: #60a5fa; }
+          .username { color: #a3a3a3; }
+          .bio { color: #e5e5e5; }
+          .stats { color: #a3a3a3; }
+          .stats a { color: #a3a3a3; }
+          .stats a:hover { color: #60a5fa; }
+          .stats strong { color: #e5e5e5; }
+          .activity-log { background: #242424; border-color: #333; }
+          .activity-title { color: #e5e5e5; }
+          .activity-total { color: #a3a3a3; }
+          .activity-item { background: #2d2d2d; }
+          .activity-desc { color: #e5e5e5; }
+          .activity-desc a { color: #60a5fa; }
+          .activity-desc .commit-hash { color: #a3a3a3; background: #333; }
+          .activity-desc .commit-hash:hover { color: #60a5fa; }
+          .activity-time { color: #a3a3a3; }
+          .activity-empty { color: #a3a3a3; }
+          .section-header { border-bottom-color: #333; }
+          .section-title { color: #e5e5e5; }
+          .section-count { color: #a3a3a3; }
+          .search { color: #e5e5e5; background: #2d2d2d; border-color: #333; }
+          .search:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15); }
+          .search::placeholder { color: #8b949e; }
+          .repo { background: #242424; border-color: #333; }
+          .repo:hover { border-color: #60a5fa; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+          .repo-icon { color: #a3a3a3; }
+          .repo-name { color: #60a5fa; }
+          .fork-badge { background: #1a3a4a; color: #60a5fa; }
+          .repo-desc { color: #a3a3a3; }
+          .repo-meta { color: #a3a3a3; }
+          .stat { color: #a3a3a3; }
+          .stat:hover { color: #60a5fa; }
+          .updated { color: #8b949e; }
+        }
       </style>
     `;
   }
